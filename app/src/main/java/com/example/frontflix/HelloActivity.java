@@ -1,7 +1,10 @@
 package com.example.frontflix;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
@@ -41,7 +44,7 @@ public class HelloActivity extends AppCompatActivity {
         editTextMovieTitle = findViewById(R.id.editText);
         imageButtonFetchMovie = findViewById(R.id.imageButton);
         recyclerView = findViewById(R.id.recyclerView);
-        recyclerView.setLayoutManager(new GridLayoutManager(this, 2)); // Use 2 columns in grid layout
+        recyclerView.setLayoutManager(new GridLayoutManager(this, 3)); // Use 3 columns in grid layout
         moviesAdapter = new Adapter(this, new ArrayList<>());
         recyclerView.setAdapter(moviesAdapter);
         executorService = Executors.newSingleThreadExecutor();
@@ -60,6 +63,35 @@ public class HelloActivity extends AppCompatActivity {
                 Toast.makeText(HelloActivity.this, "Por favor, digite o nome de um filme.", Toast.LENGTH_SHORT).show();
             }
         });
+
+        Button buttonSair = findViewById(R.id.button_sair);
+        Button buttonFavoritos = findViewById(R.id.button_favoritos);
+
+        buttonSair.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                logout();
+            }
+        });
+
+        buttonFavoritos.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openFavoritos();
+            }
+        });
+    }
+
+    private void logout() {
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+        finish();
+    }
+
+    private void openFavoritos() {
+        Intent intent = new Intent(this, FavoritosActivity.class);
+        startActivity(intent);
     }
 
     private LiveData<List<MovieItem>> fetchMovieData(String movieTitle) {
