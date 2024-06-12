@@ -1,13 +1,36 @@
 package com.example.frontflix;
 
-public class MovieItem {
-    protected String name;
-    protected String imgUrl;
-    public MovieItem(String name, String email, String imgUrl) {
-        this.name = name;
-        this.imgUrl = imgUrl;
-    }
-    public String getName() { return name; }
+import com.google.gson.annotations.SerializedName;
 
-    public String getImgUrl() { return imgUrl; }
+public class MovieItem {
+    @SerializedName("id")
+    private int id;
+    @SerializedName("title")
+    private String title;
+    @SerializedName("poster_path")
+    private String posterPath;
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getPosterPath() {
+        return posterPath;
+    }
+
+    public void setPosterPath(String posterPath) {
+        this.posterPath = posterPath;
+    }
 }

@@ -1,58 +1,59 @@
 package com.example.frontflix;
 
 import android.os.Bundle;
-import android.view.View;
+import android.util.Log;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class HelloActivity extends AppCompatActivity {
-    private TextView textView;
+    private static final String TAG = "HelloActivity";
     private EditText editTextMovieTitle;
     private ImageButton imageButtonFetchMovie;
+    private RecyclerView recyclerView;
+    private Adapter moviesAdapter;
     private ExecutorService executorService;
-
-    private ImageView imageView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.tela_inicial);
 
-        textView = findViewById(R.id.textView);
         editTextMovieTitle = findViewById(R.id.editText);
         imageButtonFetchMovie = findViewById(R.id.imageButton);
-        imageView =findViewById(R.id.imageView2);
+        recyclerView = findViewById(R.id.recyclerView);
+        recyclerView.setLayoutManager(new GridLayoutManager(this, 2)); // Use 2 columns in grid layout
+        moviesAdapter = new Adapter(this, new ArrayList<>());
+        recyclerView.setAdapter(moviesAdapter);
         executorService = Executors.newSingleThreadExecutor();
-
 
         imageButtonFetchMovie.setOnClickListener(v -> {
             String movieTitle = editTextMovieTitle.getText().toString();
             if (!movieTitle.isEmpty()) {
-                fetchMovieData(movieTitle).observe(HelloActivity.this, response -> {
-                    if (response != null) {
-                        textView.setText(response);
+                fetchMovieData(movieTitle).observe(HelloActivity.this, movies -> {
+                    if (movies != null && !movies.isEmpty()) {
+                        moviesAdapter.setMovieList(movies);
                     } else {
-                        Toast.makeText( HelloActivity.this, "Fetch error", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(HelloActivity.this, "No movies found", Toast.LENGTH_SHORT).show();
                     }
                 });
             } else {
@@ -61,58 +62,52 @@ public class HelloActivity extends AppCompatActivity {
         });
     }
 
-    private LiveData<String> fetchMovieData(String movieTitle) {
-        MutableLiveData<String> liveData = new MutableLiveData<>();
-
-        Integer id = null;
+    private LiveData<List<MovieItem>> fetchMovieData(String movieTitle) {
+        MutableLiveData<List<MovieItem>> liveData = new MutableLiveData<>();
 
         executorService.execute(() -> {
             try {
-                URL url = new URL("https://api.themoviedb.org/3/search/movie?&query=" + movieTitle + "&language=pt-BR");
+                String encodedTitle = URLEncoder.encode(movieTitle, "UTF-8");
+                URL url = new URL("https://api.themoviedb.org/3/search/movie?query=" + encodedTitle + "&language=pt-BR&api_key=YOUR_API_KEY");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("GET");
                 conn.setRequestProperty("Accept", "application/json");
                 conn.setRequestProperty("Authorization", "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI2NjVhZmExM2I4ZjRiZTFlMmUxYjVkN2JkYzlhYzQ0OCIsInN1YiI6IjY2Njg0OTkxOTE0Yjg4OTA3YWU5Zjg0ZSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.uaQuHYRaxcCdeuhIItTGLGStMGybUH0xZx1HVgLJBbk");
 
-                JSONArray resultados = getJsonArray(conn);
+                Log.d(TAG, "Request URL: " + url.toString());
 
-                StringBuilder output = new StringBuilder();
-                for (int i = 0; i < resultados.length(); i++) {
-                    JSONObject filme = resultados.getJSONObject(i);
-                    output.append("Title: ").append(filme.getString("title")).append("\n");
-//                    output.append("Overview: ").append(filme.getString("overview")).append("\n\n");
-                    output.append("Id: ").append(filme.getInt("id")).append("\n\n");
+                BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = br.readLine()) != null) {
+                    response.append(line);
+                }
+                br.close();
+
+                Log.d(TAG, "Response: " + response.toString());
+
+                JSONObject json = new JSONObject(response.toString());
+                JSONArray results = json.getJSONArray("results");
+
+                List<MovieItem> movieList = new ArrayList<>();
+                for (int i = 0; i < results.length(); i++) {
+                    JSONObject movieJson = results.getJSONObject(i);
+                    MovieItem movie = new MovieItem();
+                    movie.setId(movieJson.getInt("id"));
+                    movie.setTitle(movieJson.getString("title"));
+                    String posterPath = movieJson.has("poster_path") ? movieJson.getString("poster_path") : "";
+                    movie.setPosterPath(posterPath);
+                    movieList.add(movie);
                 }
 
-                liveData.postValue(output.toString());
+                liveData.postValue(movieList);
             } catch (Exception e) {
+                Log.e(TAG, "Error fetching movie data", e);
                 liveData.postValue(null);
             }
         });
 
         return liveData;
-    }
-
-    @NonNull
-    private static JSONArray getJsonArray(HttpURLConnection conn) throws IOException, JSONException {
-        URL url2 = new URL("https://api.themoviedb.org/3/movie/"+ 671 +"/images");
-        HttpURLConnection conn2 = (HttpURLConnection) url2.openConnection();
-        conn2.setRequestMethod("GET");
-        conn2.setRequestProperty("Accept", "application/json");
-        conn2.setRequestProperty("Authorization", "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI2NjVhZmExM2I4ZjRiZTFlMmUxYjVkN2JkYzlhYzQ0OCIsInN1YiI6IjY2Njg0OTkxOTE0Yjg4OTA3YWU5Zjg0ZSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.uaQuHYRaxcCdeuhIItTGLGStMGybUH0xZx1HVgLJBbk");
-
-
-        BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-        StringBuilder response = new StringBuilder();
-        String line;
-        while ((line = br.readLine()) != null) {
-            response.append(line);
-        }
-        br.close();
-
-        JSONObject json = new JSONObject(response.toString());
-        JSONArray resultados = json.getJSONArray("results");
-        return resultados;
     }
 
     @Override
