@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
 
         editTextEmail = findViewById(R.id.editTextTextEmailAddress);
         editTextPassword = findViewById(R.id.editTextTextPassword);
-        databaseManager = new DatabaseManager(this);  // Passe o contexto aqui
+        databaseManager = new DatabaseManager(this);
 
         Button loginButton = findViewById(R.id.button);
         loginButton.setOnClickListener(new View.OnClickListener() {
@@ -42,7 +42,9 @@ public class MainActivity extends AppCompatActivity {
                 String email = editTextEmail.getText().toString();
                 String password = editTextPassword.getText().toString();
                 if (databaseManager.authenticateUser(email, password)) {
+                    int userId = databaseManager.getUserId(email);
                     Intent intent = new Intent(MainActivity.this, HelloActivity.class);
+                    intent.putExtra("userId", userId);
                     startActivity(intent);
                     finish();
                 } else {

@@ -11,6 +11,19 @@ public class MovieItem {
     private String posterPath;
 
     private String overview;
+    private String imageUrl;
+
+    // Construtor padrão
+    public MovieItem() {}
+
+    // Construtor com todos os argumentos
+    public MovieItem(int id, String title, String posterPath, String overview, String imageUrl) {
+        this.id = id;
+        this.title = title;
+        this.posterPath = posterPath;
+        this.overview = overview;
+        this.imageUrl = imageUrl;
+    }
 
     public int getId() {
         return id;
@@ -42,5 +55,13 @@ public class MovieItem {
 
     public void setOverview(String overview) {
         this.overview = overview;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }

@@ -35,6 +35,10 @@ public class CadastroActivity extends AppCompatActivity {
         if (!email.isEmpty() && !password.isEmpty()) {
             databaseManager.addPerson(email, password);
             Toast.makeText(this, "Cadastro realizado com sucesso", Toast.LENGTH_SHORT).show();
+            int userId = databaseManager.getUserId(email);
+            Intent intent = new Intent(CadastroActivity.this, MainActivity.class);
+            intent.putExtra("userId", userId);
+            startActivity(intent);
             finish();
         } else {
             Toast.makeText(this, "Por favor, preencha todos os campos", Toast.LENGTH_SHORT).show();
