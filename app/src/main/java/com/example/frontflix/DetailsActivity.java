@@ -30,8 +30,6 @@ public class DetailsActivity extends AppCompatActivity {
     private Button btnAddToFavorites;
     private Button btnRemoveFromFavorites;
 
-    private int userId;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,12 +45,10 @@ public class DetailsActivity extends AppCompatActivity {
 
         // Get data from Intent
         Intent intent = getIntent();
-        int userId = intent.getIntExtra("userId", -1); // Receber userId
         int movieId = intent.getIntExtra("movieId", -1);
         String title = intent.getStringExtra("movieTitle");
         String overview = intent.getStringExtra("movieOverview");
         String posterPath = intent.getStringExtra("moviePosterPath");
-//        userId = intent.getIntExtra("userId", -1); // Recuperar userId
 
         // Set data to views
         movieTitle.setText(title);
@@ -77,33 +73,21 @@ public class DetailsActivity extends AppCompatActivity {
             }
         });
 
+        // Set click listener for the add to favorites button
         btnAddToFavorites.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (userId != -1) {
-                    addToFavorites(userId, movieId, title, overview, posterPath);
-                } else {
-                    Toast.makeText(DetailsActivity.this, "Erro: usuário não identificado", Toast.LENGTH_SHORT).show();
-                }
+                addToFavorites(movieId, title, overview, posterPath);
             }
         });
-        btnRemoveFromFavorites.setOnClickListener(v -> removeFromFavorites(userId, movieId));
 
-//        // Set click listener for the add to favorites button
-//        btnAddToFavorites.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                addToFavorites(movieId, title, overview, posterPath);
-//            }
-//        });
-//
-//        // Set click listener for the remove from favorites button
-//        btnRemoveFromFavorites.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                removeFromFavorites(movieId);
-//            }
-//        });
+        // Set click listener for the remove from favorites button
+        btnRemoveFromFavorites.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                removeFromFavorites(movieId);
+            }
+        });
 
         // Future implementation for trailer button
         btnTrailer.setOnClickListener(new View.OnClickListener() {
@@ -131,19 +115,58 @@ public class DetailsActivity extends AppCompatActivity {
         return false;
     }
 
-    private void addToFavorites(int userId, int movieId, String title, String overview, String posterPath) {
-        DatabaseManager databaseManager = new DatabaseManager(this);
-        databaseManager.addFavorite(userId, movieId);
+    private void addToFavorites(int movieId, String title, String overview, String posterPath) {
+        SharedPreferences sharedPreferences = getSharedPreferences("favorites", Context.MODE_PRIVATE);
+        Gson gson = new Gson();
+        String json = sharedPreferences.getString("favoriteMovies", "");
+        Type type = new TypeToken<List<MovieItem>>() {}.getType();
+        List<MovieItem> favoriteMovies = gson.fromJson(json, type);
+
+        if (favoriteMovies == null) {
+            favoriteMovies = new ArrayList<>();
+        }
+
+        MovieItem movie = new MovieItem();
+        movie.setId(movieId);
+        movie.setTitle(title);
+        movie.setOverview(overview);
+        movie.setPosterPath(posterPath);
+
+        favoriteMovies.add(movie);
+
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("favoriteMovies", gson.toJson(favoriteMovies));
+        editor.apply();
+
         btnAddToFavorites.setVisibility(View.GONE);
         btnRemoveFromFavorites.setVisibility(View.VISIBLE);
+
         Toast.makeText(this, "Adicionado aos Favoritos", Toast.LENGTH_SHORT).show();
     }
 
-    private void removeFromFavorites(int userId, int movieId) {
-        DatabaseManager databaseManager = new DatabaseManager(this);
-        databaseManager.removeFavorite(userId, movieId);
-        btnAddToFavorites.setVisibility(View.VISIBLE);
-        btnRemoveFromFavorites.setVisibility(View.GONE);
-        Toast.makeText(this, "Removido dos Favoritos", Toast.LENGTH_SHORT).show();
+    private void removeFromFavorites(int movieId) {
+        SharedPreferences sharedPreferences = getSharedPreferences("favorites", Context.MODE_PRIVATE);
+        Gson gson = new Gson();
+        String json = sharedPreferences.getString("favoriteMovies", "");
+        Type type = new TypeToken<List<MovieItem>>() {}.getType();
+        List<MovieItem> favoriteMovies = gson.fromJson(json, type);
+
+        if (favoriteMovies != null) {
+            for (int i = 0; i < favoriteMovies.size(); i++) {
+                if (favoriteMovies.get(i).getId() == movieId) {
+                    favoriteMovies.remove(i);
+                    break;
+                }
+            }
+
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString("favoriteMovies", gson.toJson(favoriteMovies));
+            editor.apply();
+
+            btnAddToFavorites.setVisibility(View.VISIBLE);
+            btnRemoveFromFavorites.setVisibility(View.GONE);
+
+            Toast.makeText(this, "Removido dos Favoritos", Toast.LENGTH_SHORT).show();
+        }
     }
 }

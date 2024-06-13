@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -20,20 +19,11 @@ public class Adapter extends RecyclerView.Adapter<Adapter.MovieViewHolder> {
     private Context context;
     private List<MovieItem> movieList;
     private boolean isFavoriteScreen;
-    private OnItemClickListener onItemClickListener;
 
     public Adapter(Context context, List<MovieItem> movieList, boolean isFavoriteScreen) {
         this.context = context;
         this.movieList = movieList;
         this.isFavoriteScreen = isFavoriteScreen;
-    }
-
-    public interface OnItemClickListener {
-        void onItemClick(MovieItem movie);
-    }
-
-    public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
-        this.onItemClickListener = onItemClickListener;
     }
 
     @NonNull
@@ -49,10 +39,13 @@ public class Adapter extends RecyclerView.Adapter<Adapter.MovieViewHolder> {
         holder.tvMovieTitle.setText(movie.getTitle());
         Glide.with(context).load("https://image.tmdb.org/t/p/w500" + movie.getPosterPath()).into(holder.imgPoster);
 
-        holder.itemView.setOnClickListener(v -> {
-            if (onItemClickListener != null) {
-                onItemClickListener.onItemClick(movie);
-            }
+        holder.imgPoster.setOnClickListener(v -> {
+            Intent intent = new Intent(context, DetailsActivity.class);
+            intent.putExtra("movieId", movie.getId());
+            intent.putExtra("movieTitle", movie.getTitle());
+            intent.putExtra("movieOverview", movie.getOverview());
+            intent.putExtra("moviePosterPath", movie.getPosterPath());
+            context.startActivity(intent);
         });
     }
 
@@ -77,4 +70,3 @@ public class Adapter extends RecyclerView.Adapter<Adapter.MovieViewHolder> {
         }
     }
 }
-

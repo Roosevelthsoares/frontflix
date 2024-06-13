@@ -3,6 +3,7 @@ package com.example.frontflix;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -10,8 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class CadastroActivity extends AppCompatActivity {
 
-    private EditText editTextEmail;
-    private EditText editTextPassword;
+    private EditText emailEditText, senhaEditText;
     private DatabaseManager databaseManager;
 
     @Override
@@ -19,29 +19,37 @@ public class CadastroActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.cadastro);
 
-        editTextEmail = findViewById(R.id.editTextTextEmailAddress);
-        editTextPassword = findViewById(R.id.editTextTextPassword);
+        emailEditText = findViewById(R.id.editTextTextEmailAddress);
+        senhaEditText = findViewById(R.id.editTextTextPassword);
         databaseManager = new DatabaseManager(this);
+
+        Button cadastrarButton = findViewById(R.id.button_cadastrar);
+        cadastrarButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                cadastrarUsuario();
+            }
+        });
+
+        Button voltarButton = findViewById(R.id.button_voltar);
+        voltarButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
     }
 
-    public void btnVoltar(View view) {
-        finish();
-    }
+    private void cadastrarUsuario() {
+        String email = emailEditText.getText().toString();
+        String senha = senhaEditText.getText().toString();
 
-    public void btnCadastrar(View view) {
-        String email = editTextEmail.getText().toString();
-        String password = editTextPassword.getText().toString();
-
-        if (!email.isEmpty() && !password.isEmpty()) {
-            databaseManager.addPerson(email, password);
-            Toast.makeText(this, "Cadastro realizado com sucesso", Toast.LENGTH_SHORT).show();
-            int userId = databaseManager.getUserId(email);
+        if (databaseManager.addUser(email, senha)) {
+            Toast.makeText(CadastroActivity.this, "Cadastro realizado com sucesso!", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(CadastroActivity.this, MainActivity.class);
-            intent.putExtra("userId", userId);
             startActivity(intent);
-            finish();
         } else {
-            Toast.makeText(this, "Por favor, preencha todos os campos", Toast.LENGTH_SHORT).show();
+            Toast.makeText(CadastroActivity.this, "Erro ao cadastrar. Tente novamente.", Toast.LENGTH_SHORT).show();
         }
     }
 }

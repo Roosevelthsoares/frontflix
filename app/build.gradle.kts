@@ -52,7 +52,6 @@ dependencies {
 
     implementation("com.squareup.okhttp3:okhttp:3.10.0")
     implementation("com.squareup.picasso:picasso:2.8")
-//    implementation("com.googlecode.json-simple:json-simple:1.1.1")
 
 
     implementation ("mysql:mysql-connector-java:8.0.32")

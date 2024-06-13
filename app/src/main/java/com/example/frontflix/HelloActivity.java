@@ -41,9 +41,6 @@ public class HelloActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.tela_inicial);
 
-        Intent intent = getIntent();
-        int userId = intent.getIntExtra("userId", -1);
-
         editTextMovieTitle = findViewById(R.id.editText);
         imageButtonFetchMovie = findViewById(R.id.imageButton);
         recyclerView = findViewById(R.id.recyclerView);
@@ -58,15 +55,6 @@ public class HelloActivity extends AppCompatActivity {
                 fetchMovieData(movieTitle).observe(HelloActivity.this, movies -> {
                     if (movies != null && !movies.isEmpty()) {
                         moviesAdapter.setMovieList(movies);
-                        moviesAdapter.setOnItemClickListener(movie -> {
-                            Intent detailIntent = new Intent(HelloActivity.this, DetailsActivity.class);
-                            detailIntent.putExtra("movieId", movie.getId());
-                            detailIntent.putExtra("movieTitle", movie.getTitle());
-                            detailIntent.putExtra("movieOverview", movie.getOverview());
-                            detailIntent.putExtra("moviePosterPath", movie.getPosterPath());
-                            detailIntent.putExtra("userId", userId); // Passar userId
-                            startActivity(detailIntent);
-                        });
                     } else {
                         Toast.makeText(HelloActivity.this, "No movies found", Toast.LENGTH_SHORT).show();
                     }
@@ -75,8 +63,6 @@ public class HelloActivity extends AppCompatActivity {
                 Toast.makeText(HelloActivity.this, "Por favor, digite o nome de um filme.", Toast.LENGTH_SHORT).show();
             }
         });
-
-
 
         Button buttonSair = findViewById(R.id.button_sair);
         Button buttonFavoritos = findViewById(R.id.button_favoritos);
@@ -88,14 +74,12 @@ public class HelloActivity extends AppCompatActivity {
             }
         });
 
-        buttonFavoritos.setOnClickListener(v -> {
-            Intent favIntent = new Intent(HelloActivity.this, FavoritosActivity.class);
-            favIntent.putExtra("userId", userId); // Passar userId
-            startActivity(favIntent);
+        buttonFavoritos.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openFavoritos();
+            }
         });
-
-
-
     }
 
     private void logout() {

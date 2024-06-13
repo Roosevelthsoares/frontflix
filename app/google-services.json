@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "262179124778",
-    "project_id": "frontflix-37dcb",
-    "storage_bucket": "frontflix-37dcb.appspot.com"
+    "project_number": "82785344872",
+    "project_id": "frontflix-9acbc",
+    "storage_bucket": "frontflix-9acbc.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:262179124778:android:e867d873ccc4fff6d7b553",
+        "mobilesdk_app_id": "1:82785344872:android:00ecfd51f87cef85c14add",
         "android_client_info": {
           "package_name": "com.example.frontflix"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAl9ZhiykF9M2dlGMk4wlvPo9WJAeHTt7Q"
+          "current_key": "AIzaSyCcF-kE9qqVZy9O-b19KC7xbpqHIk2_FdE"
         }
       ],
       "services": {

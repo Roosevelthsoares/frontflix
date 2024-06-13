@@ -16,57 +16,48 @@ import androidx.core.view.WindowInsetsCompat;
 
 public class MainActivity extends AppCompatActivity {
 
-    private EditText editTextEmail;
-    private EditText editTextPassword;
+    private Button button;
+    private EditText emailEditText, senhaEditText;
     private DatabaseManager databaseManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
 
-        editTextEmail = findViewById(R.id.editTextTextEmailAddress);
-        editTextPassword = findViewById(R.id.editTextTextPassword);
+        emailEditText = findViewById(R.id.editTextTextEmailAddress);
+        senhaEditText = findViewById(R.id.editTextTextPassword);
         databaseManager = new DatabaseManager(this);
 
         Button loginButton = findViewById(R.id.button);
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String email = editTextEmail.getText().toString();
-                String password = editTextPassword.getText().toString();
-                if (databaseManager.authenticateUser(email, password)) {
-                    int userId = databaseManager.getUserId(email);
-                    Intent intent = new Intent(MainActivity.this, HelloActivity.class);
-                    intent.putExtra("userId", userId);
-                    startActivity(intent);
-                    finish();
-                } else {
-                    Toast.makeText(MainActivity.this, "Email ou senha incorretos", Toast.LENGTH_SHORT).show();
-                }
+                autenticarUsuario();
             }
         });
 
-        TextView cadastrese = findViewById(R.id.cadastrese);
-        cadastrese.setOnClickListener(new View.OnClickListener() {
+        TextView cadastreSe = findViewById(R.id.cadastrese);
+        cadastreSe.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, CadastroActivity.class);
                 startActivity(intent);
             }
         });
-
-
-
     }
-    public void btnClick(View view) {
-        Intent intent = new Intent(this, HelloActivity.class);
-        startActivity(intent);
+
+    private void autenticarUsuario() {
+        String email = emailEditText.getText().toString();
+        String senha = senhaEditText.getText().toString();
+
+        if (databaseManager.authenticateUser(email, senha)) {
+            Toast.makeText(MainActivity.this, "Login realizado com sucesso!", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(MainActivity.this, HelloActivity.class);
+            startActivity(intent);
+            finish(); // Finaliza a MainActivity para que o usuário não possa voltar para a tela de login com o botão de voltar
+        } else {
+            Toast.makeText(MainActivity.this, "Erro ao autenticar. Verifique suas credenciais.", Toast.LENGTH_SHORT).show();
+        }
     }
 }

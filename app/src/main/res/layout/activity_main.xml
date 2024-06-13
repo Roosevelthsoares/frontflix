@@ -84,7 +84,6 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="616dp"
         android:text="Cadastre-se"
-        android:onClick="btnCadastrarSe"
         android:textColor="#7B1FA2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"

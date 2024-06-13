@@ -4,138 +4,113 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
-import android.widget.Toast;
-
+import android.os.StrictMode;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DatabaseManager extends SQLiteOpenHelper {
+import android.content.ContentValues;
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 
-    private static final String DATABASE_NAME = "banco_de_usuarios.db";
-    private static final int DATABASE_VERSION = 2; // Incrementado de 1 para 2
-    private static final String TABLE_USERS = "pessoas";
-    private static final String COLUMN_ID = "id";
-    private static final String COLUMN_EMAIL = "email";
-    private static final String COLUMN_SENHA = "senha";
-    private static final String TABLE_FAVORITES = "favoritos";
-    private static final String COLUMN_USER_ID = "pessoa_id";
-    private static final String COLUMN_MOVIE_ID = "filme_id";
-    private static final String TABLE_MOVIES = "movies";
-
-
-
-    private Context context;
+public class DatabaseManager {
+    private SQLiteDatabase database;
 
     public DatabaseManager(Context context) {
-        super(context, DATABASE_NAME, null, DATABASE_VERSION);
-        this.context = context;
+        database = new DatabaseHelper(context).getWritableDatabase();
     }
 
-    @Override
-    public void onCreate(SQLiteDatabase db) {
-        String createUserTable = "CREATE TABLE " + TABLE_USERS + " ("
-                + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + COLUMN_EMAIL + " TEXT NOT NULL UNIQUE, "
-                + COLUMN_SENHA + " TEXT NOT NULL)";
-
-        String createFavoritesTable = "CREATE TABLE " + TABLE_FAVORITES + " ("
-                + COLUMN_USER_ID + " INTEGER, "
-                + COLUMN_MOVIE_ID + " INTEGER, "
-                + "PRIMARY KEY (" + COLUMN_USER_ID + ", " + COLUMN_MOVIE_ID + "),"
-                + "FOREIGN KEY (" + COLUMN_USER_ID + ") REFERENCES " + TABLE_USERS + "(" + COLUMN_ID + "))";
-
-        String createMoviesTable = "CREATE TABLE " + TABLE_MOVIES + " ("
-                + COLUMN_MOVIE_ID + " INTEGER PRIMARY KEY, "
-                + "title TEXT, "
-                + "poster_path TEXT)";
-
-        db.execSQL(createUserTable);
-        db.execSQL(createFavoritesTable);
-        db.execSQL(createMoviesTable);
-    }
-
-
-    @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_USERS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_FAVORITES);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_MOVIES);
-        onCreate(db);
-    }
-
-    public void addPerson(String email, String senha) {
-        SQLiteDatabase db = this.getWritableDatabase();
+    public boolean addUser(String email, String senha) {
         ContentValues values = new ContentValues();
-        values.put(COLUMN_EMAIL, email);
-        values.put(COLUMN_SENHA, senha);
-        long result = db.insert(TABLE_USERS, null, values);
-        if (result == -1) {
-            Toast.makeText(context, "Erro ao inserir registro", Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(context, "Registro inserido com sucesso", Toast.LENGTH_SHORT).show();
-        }
-        db.close();
+        values.put(DatabaseHelper.COLUMN_EMAIL, email);
+        values.put(DatabaseHelper.COLUMN_SENHA, senha);
+
+        long result = database.insert(DatabaseHelper.TABLE_USERS, null, values);
+        return result != -1;
     }
 
     public boolean authenticateUser(String email, String senha) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.query(TABLE_USERS, null, COLUMN_EMAIL + "=? AND " + COLUMN_SENHA + "=?",
-                new String[]{email, senha}, null, null, null);
+        String[] columns = {DatabaseHelper.COLUMN_EMAIL};
+        String selection = DatabaseHelper.COLUMN_EMAIL + " = ? AND " + DatabaseHelper.COLUMN_SENHA + " = ?";
+        String[] selectionArgs = {email, senha};
+
+        Cursor cursor = database.query(DatabaseHelper.TABLE_USERS, columns, selection, selectionArgs, null, null, null);
         boolean authenticated = cursor.getCount() > 0;
         cursor.close();
-        db.close();
         return authenticated;
     }
-
-    public int getUserId(String email) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.query(TABLE_USERS, new String[]{COLUMN_ID}, COLUMN_EMAIL + "=?",
-                new String[]{email}, null, null, null);
-        if (cursor != null && cursor.moveToFirst()) {
-            int userId = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID));
-            cursor.close();
-            return userId;
-        }
-        return -1;
-    }
-
-    public void addFavorite(int userId, int movieId) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put(COLUMN_USER_ID, userId);
-        values.put(COLUMN_MOVIE_ID, movieId);
-        long result = db.insert(TABLE_FAVORITES, null, values);
-        if (result == -1) {
-            Toast.makeText(context, "Erro ao adicionar favorito", Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(context, "Favorito adicionado com sucesso", Toast.LENGTH_SHORT).show();
-        }
-        db.close();
-    }
-
-    public void removeFavorite(int userId, int movieId) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(TABLE_FAVORITES, COLUMN_USER_ID + "=? AND " + COLUMN_MOVIE_ID + "=?",
-                new String[]{String.valueOf(userId), String.valueOf(movieId)});
-        db.close();
-    }
-
-    public List<MovieItem> getFavorites(int userId) {
-        List<MovieItem> favorites = new ArrayList<>();
-        SQLiteDatabase db = this.getReadableDatabase();
-        String query = "SELECT f." + COLUMN_MOVIE_ID + ", m.title, m.poster_path FROM " + TABLE_FAVORITES + " f"
-                + " JOIN " + TABLE_MOVIES + " m ON f." + COLUMN_MOVIE_ID + " = m.id"
-                + " WHERE f." + COLUMN_USER_ID + " = ?";
-        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(userId)});
-        while (cursor.moveToNext()) {
-            int movieId = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_MOVIE_ID));
-            String title = cursor.getString(cursor.getColumnIndexOrThrow("title"));
-            String posterPath = cursor.getString(cursor.getColumnIndexOrThrow("poster_path"));
-            favorites.add(new MovieItem(movieId, title, posterPath, null, posterPath));
-        }
-        cursor.close();
-        db.close();
-        return favorites;
-    }
 }
+
+//public class DatabaseManager {
+//
+//    private static final String URL = "jdbc:mysql://your_database_host:3306/your_database_name"; //aqui muda host e nome do database
+//    private static final String USER = "your_database_user"; // bota o user aqui
+//    private static final String PASSWORD = "your_database_password";// bota a senha aqui
+//
+//    public DatabaseManager() {
+//        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+//        StrictMode.setThreadPolicy(policy);
+//    }
+//
+//    private Connection getConnection() throws SQLException {
+//        return DriverManager.getConnection(URL, USER, PASSWORD);
+//    }
+//
+//    public void addPerson(String email, String senha) {
+//        String query = "INSERT INTO pessoas (email, senha) VALUES (?, ?)";
+//        try (Connection conn = getConnection();
+//             PreparedStatement stmt = conn.prepareStatement(query)) {
+//            stmt.setString(1, email);
+//            stmt.setString(2, senha);
+//            stmt.executeUpdate();
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//    }
+//
+//    public void addFavorite(int pessoaId, int filmeId) {
+//        String query = "INSERT INTO favoritos (pessoa_id, filme_id) VALUES (?, ?)";
+//        try (Connection conn = getConnection();
+//             PreparedStatement stmt = conn.prepareStatement(query)) {
+//            stmt.setInt(1, pessoaId);
+//            stmt.setInt(2, filmeId);
+//            stmt.executeUpdate();
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//    }
+//
+//    public void removeFavorite(int pessoaId, int filmeId) {
+//        String query = "DELETE FROM favoritos WHERE pessoa_id = ? AND filme_id = ?";
+//        try (Connection conn = getConnection();
+//             PreparedStatement stmt = conn.prepareStatement(query)) {
+//            stmt.setInt(1, pessoaId);
+//            stmt.setInt(2, filmeId);
+//            stmt.executeUpdate();
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//    }
+//
+//    public List<Integer> getFavorites(int pessoaId) {
+//        List<Integer> favorites = new ArrayList<>();
+//        String query = "SELECT filme_id FROM favoritos WHERE pessoa_id = ?";
+//        try (Connection conn = getConnection();
+//             PreparedStatement stmt = conn.prepareStatement(query)) {
+//            stmt.setInt(1, pessoaId);
+//            try (ResultSet rs = stmt.executeQuery()) {
+//                while (rs.next()) {
+//                    favorites.add(rs.getInt("filme_id"));
+//                }
+//            }
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//        return favorites;
+//    }
+//}
