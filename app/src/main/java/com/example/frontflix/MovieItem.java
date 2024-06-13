@@ -10,6 +10,8 @@ public class MovieItem {
     @SerializedName("poster_path")
     private String posterPath;
 
+    private String overview;
+
     public int getId() {
         return id;
     }
@@ -32,5 +34,13 @@ public class MovieItem {
 
     public void setPosterPath(String posterPath) {
         this.posterPath = posterPath;
+    }
+
+    public String getOverview() {
+        return overview;
+    }
+
+    public void setOverview(String overview) {
+        this.overview = overview;
     }
 }

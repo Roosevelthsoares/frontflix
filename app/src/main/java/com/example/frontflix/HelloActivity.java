@@ -45,7 +45,7 @@ public class HelloActivity extends AppCompatActivity {
         imageButtonFetchMovie = findViewById(R.id.imageButton);
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new GridLayoutManager(this, 3)); // Use 3 columns in grid layout
-        moviesAdapter = new Adapter(this, new ArrayList<>());
+        moviesAdapter = new Adapter(this, new ArrayList<>(), false);
         recyclerView.setAdapter(moviesAdapter);
         executorService = Executors.newSingleThreadExecutor();
 
@@ -129,6 +129,8 @@ public class HelloActivity extends AppCompatActivity {
                     movie.setTitle(movieJson.getString("title"));
                     String posterPath = movieJson.has("poster_path") ? movieJson.getString("poster_path") : "";
                     movie.setPosterPath(posterPath);
+                    String overview = movieJson.has("overview") ? movieJson.getString("overview") : "";
+                    movie.setOverview(overview); // Add overview to MovieItem
                     movieList.add(movie);
                 }
 

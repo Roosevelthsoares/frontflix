@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.google.gms.google.services)
+
+    kotlin("kapt") version "2.0.0"
 }
 
 android {
@@ -54,5 +56,5 @@ dependencies {
 
 
     implementation ("mysql:mysql-connector-java:8.0.32")
-
+    implementation("com.github.bumptech.glide:glide:4.12.0")
 }
