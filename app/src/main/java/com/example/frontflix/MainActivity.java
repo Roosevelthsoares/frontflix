@@ -61,5 +61,12 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+
+
+    }
+    public void btnClick(View view) {
+        Intent intent = new Intent(this, HelloActivity.class);
+        startActivity(intent);
     }
 }

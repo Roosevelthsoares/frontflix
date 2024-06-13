@@ -13,7 +13,7 @@ import java.util.List;
 public class DatabaseManager extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "banco_de_usuarios.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2; // Incrementado de 1 para 2
     private static final String TABLE_USERS = "pessoas";
     private static final String COLUMN_ID = "id";
     private static final String COLUMN_EMAIL = "email";
@@ -22,6 +22,8 @@ public class DatabaseManager extends SQLiteOpenHelper {
     private static final String COLUMN_USER_ID = "pessoa_id";
     private static final String COLUMN_MOVIE_ID = "filme_id";
     private static final String TABLE_MOVIES = "movies";
+
+
 
     private Context context;
 
@@ -52,6 +54,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         db.execSQL(createFavoritesTable);
         db.execSQL(createMoviesTable);
     }
+
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {

@@ -22,20 +22,24 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".HelloActivity"
-            android:exported="true">
-        </activity>
+        <activity android:name=".HelloActivity" />
+        <activity android:name=".DetailsActivity" />
+        <activity android:name=".FavoritosActivity" />
+        <activity android:name=".CadastroActivity" />
+<!--        <activity-->
+<!--            android:name=".HelloActivity"-->
+<!--            android:exported="true">-->
+<!--        </activity>-->
 
-        <activity
-            android:name=".FavoritosActivity"
-            android:exported="true">
-        </activity>
-        <activity
-            android:name=".DetailsActivity"
-            android:exported="true">
-        </activity>
-        <activity android:name=".CadastroActivity" android:exported="true" />
+<!--        <activity-->
+<!--            android:name=".FavoritosActivity"-->
+<!--            android:exported="true">-->
+<!--        </activity>-->
+<!--        <activity-->
+<!--            android:name=".DetailsActivity"-->
+<!--            android:exported="true">-->
+<!--        </activity>-->
+<!--        <activity android:name=".CadastroActivity" android:exported="true" />-->
     </application>
 
 </manifest>
