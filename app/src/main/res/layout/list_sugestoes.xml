@@ -19,17 +19,7 @@
             android:scaleType="fitStart"
             android:src="@mipmap/ic_launcher_round" />
 
-        <Button
-            android:id="@+id/btnRemove"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_gravity="top|end"
-            android:layout_margin="4dp"
-            android:background="@drawable/ic_close_red"
-            android:text="X"
-            android:textColor="@android:color/white"
-            android:textSize="10sp"
-            android:visibility="visible" />
+
     </FrameLayout>
 
     <TextView

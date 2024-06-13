@@ -34,6 +34,12 @@ public class FavoritosActivity extends AppCompatActivity {
         loadFavoriteMovies();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadFavoriteMovies();
+    }
+
     private void loadFavoriteMovies() {
         SharedPreferences sharedPreferences = getSharedPreferences("favorites", Context.MODE_PRIVATE);
         Gson gson = new Gson();
